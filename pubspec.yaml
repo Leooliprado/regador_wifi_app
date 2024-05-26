@@ -11,10 +11,23 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.3
+  syncfusion_flutter_gauges: ^25.2.5
+  cupertino_icons: ^1.0.2
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
+
+
+flutter_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "dev_assets/icone.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "dev_assets/icone_adaptive.png"
   flutter_lints: ^2.0.0
 
 flutter:

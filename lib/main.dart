@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,20 +11,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      themeMode: ThemeMode.system, // Configuração do modo de tema para seguir o tema do sistema
-      theme: ThemeData.light().copyWith( // Definição do tema claro
-        primaryColor: Colors.blue, // Cor primária
-        colorScheme: const ColorScheme.light().copyWith( // Esquema de cores
-          secondary: Colors.blue, // Cor secundária
+      themeMode: ThemeMode.system,
+      theme: ThemeData.light().copyWith(
+        primaryColor: Colors.blue,
+        colorScheme: const ColorScheme.light().copyWith(
+          secondary: Colors.blue,
         ),
       ),
-      darkTheme: ThemeData.dark().copyWith( // Definição do tema escuro
-        primaryColor: const Color.fromARGB(255, 219, 132, 1), // Cor primária
-        colorScheme: const ColorScheme.dark().copyWith( // Esquema de cores
-          secondary: const Color.fromARGB(255, 219, 132, 1), // Cor secundária
+      darkTheme: ThemeData.dark().copyWith(
+        primaryColor: const Color.fromARGB(255, 219, 132, 1),
+        colorScheme: const ColorScheme.dark().copyWith(
+          secondary: const Color.fromARGB(255, 219, 132, 1),
         ),
       ),
-      home: Umidade(), // Definição da página inicial do aplicativo
+      home: Umidade(),
     );
   }
 }
@@ -31,16 +32,16 @@ class MyApp extends StatelessWidget {
 class Umidade extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // Use Scaffold para aplicar a cor de fundo apropriada
+    return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Umidade do Solo',
           style: TextStyle(fontSize: 25),
         ),
-        backgroundColor: Theme.of(context).colorScheme.secondary, // Cor de fundo da barra de aplicativos
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         centerTitle: true,
       ),
-      body: MyHomePage(), // Remova o MaterialApp desnecessário
+      body: MyHomePage(),
     );
   }
 }
@@ -60,15 +61,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    fetchData(); // Inicia a primeira busca de dados
+    fetchData();
     _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      fetchData(); // Atualiza os dados a cada 2 segundos
+      fetchData();
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancela o timer ao descartar o widget
+    _timer.cancel();
     super.dispose();
   }
 
@@ -98,46 +99,82 @@ class _MyHomePageState extends State<MyHomePage> {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      return response.body; // Assume que o servidor retorna texto simples
+      return response.body;
     } else {
       throw Exception('Falha ao carregar os dados. Código de status: ${response.statusCode}');
     }
   }
 
-
-double calculateHumidityPercentage(String humidityData) {
-  final int humidityValue = int.tryParse(humidityData) ?? 0;
-  return 100 - ((humidityValue / 4095) * 100); // Calcula a porcentagem de umidade invertida
-}
+  double calculateHumidityPercentage(String humidityData) {
+    final int humidityValue = int.tryParse(humidityData) ?? 0;
+    return 100 - ((humidityValue / 4095) * 100);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+
     return Center(
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              data != null ? '$data umidade!' : 'Carregando...',
-              style: TextStyle(fontSize: 30),
-            ), // Mostra "Carregando..." enquanto os dados estão sendo carregados
-            if (error.isNotEmpty) Text('Erro: $error'), // Mostra o erro se houver algum
+          Text(
+            data != null ? '$data umidade!' : 'Carregando...',
+            style: TextStyle(fontSize: 20),
+             ), // Mostra "Carregando..." enquanto os dados estão sendo carregados
+              if (error.isNotEmpty) Text('Erro: $error'), // Mostra o erro se houver algum
 
-            Text(
-              'Umidade: ${data != null ? '${calculateHumidityPercentage(data!).toStringAsFixed(2)}%' : 'Carregando...'}',
-              style: TextStyle(fontSize: 30),
-            ), 
-
-
-            if (data != null && int.tryParse(data!)! >= 3001)
-              const Text(
-                "bomba d'água ligada",
-                style: TextStyle(fontSize: 30),
+            if (data != null)
+              SfRadialGauge(
+                axes: <RadialAxis>[
+                  RadialAxis(
+                    minimum: 0,
+                    maximum: 100,
+                    ranges: <GaugeRange>[
+                      GaugeRange(
+                        startValue: 0,
+                        endValue: 100,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ],
+                    pointers: <GaugePointer>[
+                      NeedlePointer(
+                        value: calculateHumidityPercentage(data!),
+                      ),
+                    ],
+                    annotations: <GaugeAnnotation>[
+                      GaugeAnnotation(
+                        widget: Text(
+                          '${calculateHumidityPercentage(data!).toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        angle: 90,
+                        positionFactor: 0.75,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            if (data != null && int.tryParse(data!)! < 3001)
-              const Text(
-                "bomba d'água desligada",
-                style: TextStyle(fontSize: 30),
+
+            if (data != null)
+              RichText(
+                text: TextSpan(
+                  text: "bomba d'água ",
+                  style: TextStyle(fontSize: 30, color: textColor), // Default text style
+                  children: [
+                    TextSpan(
+                      text: int.tryParse(data!)! >= 3001 ? 'ligada' : 'desligada',
+                      style: TextStyle(
+                        color: int.tryParse(data!)! >= 3001 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
