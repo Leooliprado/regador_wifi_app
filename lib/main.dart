@@ -130,11 +130,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 axes: <RadialAxis>[
                   RadialAxis(
                     minimum: 0,
-                    maximum: 100,
+                    maximum: 101,
                     ranges: <GaugeRange>[
                       GaugeRange(
                         startValue: 0,
-                        endValue: 100,
+                        endValue: 101,
                         color: Theme.of(context).colorScheme.secondary,
                       ),
                     ],
