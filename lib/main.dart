@@ -51,26 +51,41 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final String url = 'http://44.206.253.220:4000/puxar';
   String? data;
   bool isLoading = false;
   String error = '';
-  late Timer _timer;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     fetchData();
-    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      fetchData();
-    });
+    startTimer();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
+      _timer?.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      startTimer();
+    }
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      fetchData();
+    });
   }
 
   void fetchData() async {
