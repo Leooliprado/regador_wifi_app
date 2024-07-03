@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -53,7 +54,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final String url = 'http://44.206.253.220:4000/puxar';
-  String? data;
+  String? umidade;
+  String? mediaDiaria;
   bool isLoading = false;
   String error = '';
   Timer? _timer;
@@ -97,11 +99,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     try {
       final fetchedData = await fetchDataFromServer();
       setState(() {
-        data = fetchedData;
+        umidade = fetchedData['umidade'].toString();
+        mediaDiaria = fetchedData['media_diaria'].toString();
       });
     } catch (e) {
       setState(() {
         error = e.toString();
+        print(error);
       });
     } finally {
       setState(() {
@@ -110,25 +114,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  Future<String> fetchDataFromServer() async {
+  Future<Map<String, dynamic>> fetchDataFromServer() async {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      return response.body;
+      return json.decode(response.body);
     } else {
       throw Exception('Falha ao carregar os dados. Código de status: ${response.statusCode}');
     }
   }
 
-double calculateHumidityPercentage(String? humidityData) {
-  if (humidityData == null) {
-    return 0.0; // or handle null case as per your logic
-  }
+  double calculateHumidityPercentage(String? humidityData) {
+    if (humidityData == null) {
+      return 0.0;
+    }
   
-  double humidityValue = double.tryParse(humidityData) ?? 0.0;
-  return 100 - ((humidityValue / 4095) * 100);
-}
-
+    double humidityValue = double.tryParse(humidityData) ?? 0.0;
+    return 100 - ((humidityValue / 4095) * 100);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,13 +142,12 @@ double calculateHumidityPercentage(String? humidityData) {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-          Text(
-            data != null ? '$data umidade!' : 'Carregando...',
-            style: TextStyle(fontSize: 20),
-             ), // Mostra "Carregando..." enquanto os dados estão sendo carregados
-              if (error.isNotEmpty) Text('Erro: $error'), // Mostra o erro se houver algum
-
-            if (data != null)
+            Text(
+              umidade != null ? '$umidade umidade!' : 'Carregando...',
+              style: TextStyle(fontSize: 20),
+            ),
+            if (error.isNotEmpty) Text('Erro: $error'),
+            if (umidade != null)
               SfRadialGauge(
                 axes: <RadialAxis>[
                   RadialAxis(
@@ -160,13 +162,13 @@ double calculateHumidityPercentage(String? humidityData) {
                     ],
                     pointers: <GaugePointer>[
                       NeedlePointer(
-                        value: calculateHumidityPercentage(data!),
+                        value: calculateHumidityPercentage(umidade),
                       ),
                     ],
                     annotations: <GaugeAnnotation>[
                       GaugeAnnotation(
                         widget: Text(
-                          '${calculateHumidityPercentage(data!).toStringAsFixed(2)}%',
+                          '${calculateHumidityPercentage(umidade).toStringAsFixed(2)}%',
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
@@ -180,22 +182,42 @@ double calculateHumidityPercentage(String? humidityData) {
                   ),
                 ],
               ),
-
-              if (data != null)
-                  RichText(
-                    text: TextSpan(
-                      text: "bomba d'água ",
-                      style: TextStyle(fontSize: 30, color: textColor), // Default text style
-                      children: [
-                        TextSpan(
-                          text: int.tryParse(data!) != null && int.tryParse(data!)! >= 3001 ? 'ligada' : 'desligada',
-                          style: TextStyle(
-                            color: int.tryParse(data!) != null && int.tryParse(data!)! >= 3001 ? Colors.green : Colors.red,
-                          ),
-                        ),
-                      ],
+         if (mediaDiaria != null)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Nenhuma média diária de umidade disponível',
+                      style: TextStyle(fontSize: 25, color: textColor),
+                      textAlign: TextAlign.center, // Alinha o texto ao centro
                     ),
-                  ),        
+                  ],
+                ),
+              ),
+            if (mediaDiaria == null)
+              Text(
+                'Média diária: $mediaDiaria',
+                style: TextStyle(fontSize: 30, color: textColor),
+              ),
+   
+            SizedBox(height: 30,),
+
+            if (umidade != null)
+              RichText(
+                text: TextSpan(
+                  text: "bomba d'água ",
+                  style: TextStyle(fontSize: 30, color: textColor),
+                  children: [
+                    TextSpan(
+                      text: int.tryParse(umidade!) != null && int.tryParse(umidade!)! >= 3001 ? 'ligada' : 'desligada',
+                      style: TextStyle(
+                        color: int.tryParse(umidade!) != null && int.tryParse(umidade!)! >= 3001 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
