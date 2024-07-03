@@ -120,10 +120,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  double calculateHumidityPercentage(String humidityData) {
-    final int humidityValue = int.tryParse(humidityData) ?? 0;
-    return 100 - ((humidityValue / 4095) * 100);
+double calculateHumidityPercentage(String? humidityData) {
+  if (humidityData == null) {
+    return 0.0; // or handle null case as per your logic
   }
+  
+  double humidityValue = double.tryParse(humidityData) ?? 0.0;
+  return 100 - ((humidityValue / 4095) * 100);
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -176,21 +181,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ],
               ),
 
-            if (data != null)
-              RichText(
-                text: TextSpan(
-                  text: "bomba d'água ",
-                  style: TextStyle(fontSize: 30, color: textColor), // Default text style
-                  children: [
-                    TextSpan(
-                      text: int.tryParse(data!)! >= 3001 ? 'ligada' : 'desligada',
-                      style: TextStyle(
-                        color: int.tryParse(data!)! >= 3001 ? Colors.green : Colors.red,
-                      ),
+              if (data != null)
+                  RichText(
+                    text: TextSpan(
+                      text: "bomba d'água ",
+                      style: TextStyle(fontSize: 30, color: textColor), // Default text style
+                      children: [
+                        TextSpan(
+                          text: int.tryParse(data!) != null && int.tryParse(data!)! >= 3001 ? 'ligada' : 'desligada',
+                          style: TextStyle(
+                            color: int.tryParse(data!) != null && int.tryParse(data!)! >= 3001 ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),        
           ],
         ),
       ),
