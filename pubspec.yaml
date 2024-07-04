@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.3
-  syncfusion_flutter_gauges: ^25.2.5
+  syncfusion_flutter_charts: ^20.2.51
+  syncfusion_flutter_gauges: ^20.4.54
   cupertino_icons: ^1.0.2
   flutter_launcher_icons: ^0.13.1
 

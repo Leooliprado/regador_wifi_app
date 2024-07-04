@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -128,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (humidityData == null) {
       return 0.0;
     }
-  
+
     double humidityValue = double.tryParse(humidityData) ?? 0.0;
     return 100 - ((humidityValue / 4095) * 100);
   }
@@ -142,6 +144,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
+            SizedBox(height: 30),
+
             Text(
               umidade != null ? '$umidade umidade!' : 'Carregando...',
               style: TextStyle(fontSize: 20),
@@ -182,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ],
               ),
-         if (mediaDiaria != null)
+            if (mediaDiaria == null)
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -190,18 +195,37 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     Text(
                       'Nenhuma média diária de umidade disponível',
                       style: TextStyle(fontSize: 25, color: textColor),
-                      textAlign: TextAlign.center, // Alinha o texto ao centro
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-            if (mediaDiaria == null)
-              Text(
-                'Média diária: $mediaDiaria',
-                style: TextStyle(fontSize: 30, color: textColor),
+          
+            SizedBox(height: 30),
+
+            if (mediaDiaria != null) 
+              SfCartesianChart(
+                primaryXAxis: CategoryAxis(),
+                title: ChartTitle(text: 'Média Diária de Umidade'),
+                legend: Legend(isVisible: false),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <ChartSeries>[
+                  ColumnSeries<Map<String, dynamic>, String>(
+                    dataSource: [
+                      {'label': 'Média Diária', 'value': calculateHumidityPercentage(mediaDiaria)},
+                    ],
+                    xValueMapper: (datum, _) => datum['label'],
+                    yValueMapper: (datum, _) => datum['value'],
+                    dataLabelSettings: DataLabelSettings(isVisible: true, labelAlignment: ChartDataLabelAlignment.auto),
+                    dataLabelMapper: (datum, _) => '${datum['value'].toStringAsFixed(2)}%',
+                  ),
+                ],
               ),
-   
-            SizedBox(height: 30,),
+
+
+
+
+            SizedBox(height: 30),
 
             if (umidade != null)
               RichText(
@@ -218,6 +242,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
+
+              SizedBox(height: 30),
           ],
         ),
       ),
