@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-
 void main() {
   runApp(MyApp());
 }
@@ -58,6 +57,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final String url = 'http://44.206.253.220:4000/puxar';
   String? umidade;
   String? mediaDiaria;
+  bool? estado_bomba_dagua;
   bool isLoading = false;
   String error = '';
   Timer? _timer;
@@ -103,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       setState(() {
         umidade = fetchedData['umidade'].toString();
         mediaDiaria = fetchedData['media_diaria'].toString();
+        estado_bomba_dagua = fetchedData['estado_bomba'] as bool?;
       });
     } catch (e) {
       setState(() {
@@ -144,9 +145,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             SizedBox(height: 30),
-
             Text(
               umidade != null ? '$umidade umidade!' : 'Carregando...',
               style: TextStyle(fontSize: 20),
@@ -200,10 +199,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-          
             SizedBox(height: 30),
-
-            if (mediaDiaria != null) 
+            if (mediaDiaria != null)
               SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
                 title: ChartTitle(text: 'Média Diária de Umidade'),
@@ -222,28 +219,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ],
               ),
 
-
-
-
             SizedBox(height: 30),
 
-            if (umidade != null)
+            if (estado_bomba_dagua != null)
               RichText(
                 text: TextSpan(
                   text: "bomba d'água ",
                   style: TextStyle(fontSize: 30, color: textColor),
                   children: [
                     TextSpan(
-                      text: int.tryParse(umidade!) != null && int.tryParse(umidade!)! >= 3001 ? 'ligada' : 'desligada',
+                      text: estado_bomba_dagua! ? 'ligada' : 'desligada',
                       style: TextStyle(
-                        color: int.tryParse(umidade!) != null && int.tryParse(umidade!)! >= 3001 ? Colors.green : Colors.red,
+                        color: estado_bomba_dagua! ? Colors.green : Colors.red,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              SizedBox(height: 30),
+            SizedBox(height: 30),
           ],
         ),
       ),
