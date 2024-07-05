@@ -15,6 +15,7 @@ dependencies:
   syncfusion_flutter_gauges: ^20.4.54
   cupertino_icons: ^1.0.2
   flutter_launcher_icons: ^0.13.1
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(MyApp());
@@ -57,7 +58,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final String url = 'http://44.206.253.220:4000/puxar';
   String? umidade;
   String? mediaDiaria;
-  bool? estado_bomba_dagua;
+  List<dynamic>? mediasDiariasSemana;
+  bool? estadoBombaDagua;
   bool isLoading = false;
   String error = '';
   Timer? _timer;
@@ -103,7 +105,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       setState(() {
         umidade = fetchedData['umidade'].toString();
         mediaDiaria = fetchedData['media_diaria'].toString();
-        estado_bomba_dagua = fetchedData['estado_bomba'] as bool?;
+        estadoBombaDagua = fetchedData['estado_bomba'] as bool?;
+        mediasDiariasSemana = fetchedData['medias_diarias_semana'];
       });
     } catch (e) {
       setState(() {
@@ -136,6 +139,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return 100 - ((humidityValue / 4095) * 100);
   }
 
+  String formatDate(String dateStr) {
+    final date = DateFormat('EEE, dd MMM yyyy HH:mm:ss').parse(dateStr);
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
@@ -145,12 +153,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
             SizedBox(height: 30),
+
             Text(
               umidade != null ? '$umidade umidade!' : 'Carregando...',
               style: TextStyle(fontSize: 20),
             ),
             if (error.isNotEmpty) Text('Erro: $error'),
+
             if (umidade != null)
               SfRadialGauge(
                 axes: <RadialAxis>[
@@ -186,6 +197,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ],
               ),
+
             if (mediaDiaria == null)
               Center(
                 child: Column(
@@ -199,7 +211,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
+
             SizedBox(height: 30),
+
             if (mediaDiaria != null)
               SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
@@ -221,22 +235,45 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             SizedBox(height: 30),
 
-            if (estado_bomba_dagua != null)
+            if (mediasDiariasSemana != null)
+              SfCartesianChart(
+                primaryXAxis: CategoryAxis(),
+                title: ChartTitle(text: 'Médias Diárias da Umidade Semanal'),
+                legend: Legend(isVisible: false),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <ChartSeries>[
+                  ColumnSeries<Map<String, dynamic>, String>(
+                    dataSource: mediasDiariasSemana!.map((data) {
+                      return {
+                        'data': data['data'],
+                        'media_umidade_solo': calculateHumidityPercentage(data['media_umidade_solo'].toString()),
+                      };
+                    }).toList(),
+                    xValueMapper: (datum, _) => formatDate(datum['data']),
+                    yValueMapper: (datum, _) => datum['media_umidade_solo'],
+                    dataLabelSettings: DataLabelSettings(isVisible: true, labelAlignment: ChartDataLabelAlignment.outer),
+                    dataLabelMapper: (datum, _) => '${datum['media_umidade_solo'].toStringAsFixed(2)}%',
+                  ),
+                ],
+              ),
+
+            SizedBox(height: 30),
+
+            if (estadoBombaDagua != null)
               RichText(
                 text: TextSpan(
                   text: "bomba d'água ",
                   style: TextStyle(fontSize: 30, color: textColor),
                   children: [
                     TextSpan(
-                      text: estado_bomba_dagua! ? 'ligada' : 'desligada',
+                      text: estadoBombaDagua! ? 'ligada' : 'desligada',
                       style: TextStyle(
-                        color: estado_bomba_dagua! ? Colors.green : Colors.red,
+                        color: estadoBombaDagua! ? Colors.green : Colors.red,
                       ),
                     ),
                   ],
                 ),
               ),
-
             SizedBox(height: 30),
           ],
         ),
