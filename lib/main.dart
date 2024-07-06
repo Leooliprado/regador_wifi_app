@@ -160,9 +160,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             Text(
               umidade != null ? '$umidade umidade!' : 'Carregando...',
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 30),
             ),
-            if (error.isNotEmpty) Text('Erro: $error'),
+            if (error.isNotEmpty) Text('Erro: $error',
+            style: TextStyle(fontSize: 30),),
 
             if (umidade != null)
               SfRadialGauge(
@@ -180,6 +181,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     pointers: <GaugePointer>[
                       NeedlePointer(
                         value: calculateHumidityPercentage(umidade),
+                        needleColor: textColor, // Cor do ponteiro
                       ),
                     ],
                     annotations: <GaugeAnnotation>[
@@ -189,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
-                            color: textColor,
+                            color: textColor, // Cor do texto
                           ),
                         ),
                         angle: 90,
@@ -200,19 +202,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ],
               ),
 
-            if (mediaDiaria == null)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Nenhuma média diária de umidade disponível',
-                      style: TextStyle(fontSize: 25, color: textColor),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
 
             SizedBox(height: 30),
 
@@ -261,9 +250,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             SizedBox(height: 30),
 
-            Text("Irrigou hoje: $precisa_irrigar vezes",
-            style: TextStyle(fontSize: 30, color: textColor),
-            ),
+            if (precisa_irrigar != null)
+              Text("Irrigou hoje: $precisa_irrigar vezes",
+                style: TextStyle(fontSize: 30, color: textColor),
+                ),
 
             SizedBox(height: 30),
 
