@@ -60,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String? mediaDiaria;
   List<dynamic>? mediasDiariasSemana;
   bool? estadoBombaDagua;
+  int? precisa_irrigar;
   bool isLoading = false;
   String error = '';
   Timer? _timer;
@@ -107,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         mediaDiaria = fetchedData['media_diaria'].toString();
         estadoBombaDagua = fetchedData['estado_bomba'] as bool?;
         mediasDiariasSemana = fetchedData['medias_diarias_semana'];
+        precisa_irrigar = int.tryParse(fetchedData['precisa_irrigar'].toString());
       });
     } catch (e) {
       setState(() {
@@ -256,6 +258,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ],
               ),
+
+            SizedBox(height: 30),
+
+            Text("Irrigou hoje: $precisa_irrigar vezes",
+            style: TextStyle(fontSize: 30, color: textColor),
+            ),
 
             SizedBox(height: 30),
 
