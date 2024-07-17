@@ -208,6 +208,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (mediaDiaria != null)
               SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
+                primaryYAxis: NumericAxis(minimum: 0, maximum: 100),
                 title: ChartTitle(text: 'Média Diária de Umidade'),
                 legend: Legend(isVisible: false),
                 tooltipBehavior: TooltipBehavior(enable: true),
@@ -229,6 +230,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (mediasDiariasSemana != null)
               SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
+                primaryYAxis: NumericAxis(minimum: 0, maximum: 100),
                 title: ChartTitle(text: 'Médias Diárias da Umidade Semanal'),
                 legend: Legend(isVisible: false),
                 tooltipBehavior: TooltipBehavior(enable: true),
