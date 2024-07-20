@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool isLoading = false;
   String error = '';
   Timer? _timer;
+  List<dynamic>? tudoTebalaIrrigar;
 
   @override
   void initState() {
@@ -108,6 +109,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         mediaDiaria = fetchedData['media_diaria'].toString();
         estadoBombaDagua = fetchedData['estado_bomba'] as bool?;
         mediasDiariasSemana = fetchedData['medias_diarias_semana'];
+        tudoTebalaIrrigar = fetchedData['tudo_tebala_irrigar'];
         precisa_irrigar = int.tryParse(fetchedData['precisa_irrigar'].toString());
       });
     } catch (e) {
@@ -132,19 +134,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  double calculateHumidityPercentage(String? humidityData) {
-    if (humidityData == null) {
-      return 0.0;
-    }
-
-    double humidityValue = double.tryParse(humidityData) ?? 0.0;
-    return 100 - ((humidityValue / 4095) * 100);
+  double calculateHumidityPercentage(double humidityValue) {
+    const maxSensorValue = 4095.0;
+    return 100 - ((humidityValue / maxSensorValue) * 100);
   }
 
-  String formatDate(String dateStr) {
-    final date = DateFormat('EEE, dd MMM yyyy HH:mm:ss').parse(dateStr);
-    return '${date.day}/${date.month}/${date.year}';
-  }
+String formatDate(String dateStr) {
+  final date = DateFormat('EEE, dd MMM yyyy HH:mm:ss \'GMT\'').parse(dateStr);
+  return DateFormat('dd/MM/yyyy').format(date); // Alterado para exibir somente a data
+}
+String formatTime(String dateStr) {
+  final date = DateTime.parse(dateStr);
+  return DateFormat('HH:mm').format(date); // Formata para exibir somente a hora e os minutos
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +159,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             SizedBox(height: 30),
 
             Text(
@@ -180,14 +183,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     ],
                     pointers: <GaugePointer>[
                       NeedlePointer(
-                        value: calculateHumidityPercentage(umidade),
+                        value: calculateHumidityPercentage(double.parse(umidade!)),
                         needleColor: textColor, // Cor do ponteiro
                       ),
                     ],
                     annotations: <GaugeAnnotation>[
                       GaugeAnnotation(
                         widget: Text(
-                          '${calculateHumidityPercentage(umidade).toStringAsFixed(2)}%',
+                          '${calculateHumidityPercentage(double.parse(umidade!)).toStringAsFixed(2)}%',
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
@@ -202,7 +205,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ],
               ),
 
-
             SizedBox(height: 30),
 
             if (mediaDiaria != null)
@@ -215,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 series: <ChartSeries>[
                   ColumnSeries<Map<String, dynamic>, String>(
                     dataSource: [
-                      {'label': 'Média Diária', 'value': calculateHumidityPercentage(mediaDiaria)},
+                      {'label': 'Média Diária', 'value': calculateHumidityPercentage(double.parse(mediaDiaria!))},
                     ],
                     xValueMapper: (datum, _) => datum['label'],
                     yValueMapper: (datum, _) => datum['value'],
@@ -227,33 +229,68 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             SizedBox(height: 30),
 
-            if (mediasDiariasSemana != null)
+          if (mediasDiariasSemana != null)
+            SfCartesianChart(
+              primaryXAxis: CategoryAxis(
+                labelRotation: 0, // Rotaciona as labels para garantir que estejam horizontais
+                interval: 1, // Define o intervalo entre as labels no eixo x
+                labelStyle: TextStyle(fontSize: 12), // Ajusta o tamanho da fonte para as labels
+              ),
+              primaryYAxis: NumericAxis(minimum: 0, maximum: 100),
+              title: ChartTitle(text: 'Médias Diárias da Umidade Semanal'),
+              legend: Legend(isVisible: false),
+              tooltipBehavior: TooltipBehavior(enable: true),
+              series: <ChartSeries>[
+                ColumnSeries<Map<String, dynamic>, String>(
+                  dataSource: mediasDiariasSemana!.map((data) {
+                    return {
+                      'data': formatDate(data['data']),
+                      'media_umidade_solo': calculateHumidityPercentage(double.parse(data['media_umidade_solo'].toString())),
+                    };
+                  }).toList(),
+                  xValueMapper: (datum, _) => datum['data'],
+                  yValueMapper: (datum, _) => datum['media_umidade_solo'],
+                  dataLabelSettings: DataLabelSettings(isVisible: true, labelAlignment: ChartDataLabelAlignment.outer),
+                  dataLabelMapper: (datum, _) => '${datum['media_umidade_solo'].toStringAsFixed(2)}%',
+                ),
+              ],
+            ),
+
+
+            SizedBox(height: 30),
+
+            if (tudoTebalaIrrigar != null)
               SfCartesianChart(
-                primaryXAxis: CategoryAxis(),
+                primaryXAxis: CategoryAxis(
+                  labelRotation: 45, // Rotaciona as labels se necessário para evitar sobreposição
+                  labelStyle: TextStyle(fontSize: 12), // Ajusta o tamanho da fonte das labels
+                ),
                 primaryYAxis: NumericAxis(minimum: 0, maximum: 100),
-                title: ChartTitle(text: 'Médias Diárias da Umidade Semanal'),
-                legend: Legend(isVisible: false),
+                title: ChartTitle(text: 'Dados de Umidade ao Longo do Dia'),
+                legend: Legend(isVisible: true),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <ChartSeries>[
-                  ColumnSeries<Map<String, dynamic>, String>(
-                    dataSource: mediasDiariasSemana!.map((data) {
+                  LineSeries<Map<String, dynamic>, String>(
+                    dataSource: tudoTebalaIrrigar!.map((data) {
                       return {
-                        'data': data['data'],
-                        'media_umidade_solo': calculateHumidityPercentage(data['media_umidade_solo'].toString()),
+                        'data': formatTime(data[0]), // Formata para mostrar somente hora e minuto
+                        'valor': calculateHumidityPercentage(data[1]),
                       };
                     }).toList(),
-                    xValueMapper: (datum, _) => formatDate(datum['data']),
-                    yValueMapper: (datum, _) => datum['media_umidade_solo'],
-                    dataLabelSettings: DataLabelSettings(isVisible: true, labelAlignment: ChartDataLabelAlignment.outer),
-                    dataLabelMapper: (datum, _) => '${datum['media_umidade_solo'].toStringAsFixed(2)}%',
+                    xValueMapper: (datum, _) => datum['data'],
+                    yValueMapper: (datum, _) => datum['valor'],
+                    dataLabelSettings: DataLabelSettings(isVisible: true),
+                    dataLabelMapper: (datum, _) => '${datum['valor'].toStringAsFixed(2)}%',
                   ),
                 ],
               ),
 
-            SizedBox(height: 30),
+
+              SizedBox(height: 30),
+
 
             if (precisa_irrigar != null)
-              Text("Irrigou hoje: $precisa_irrigar vezes",
+              Text("Irrigou hoje: $precisa_irrigar",
                 style: TextStyle(fontSize: 30, color: textColor),
                 ),
 
@@ -262,7 +299,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (estadoBombaDagua != null)
               RichText(
                 text: TextSpan(
-                  text: "bomba d'água ",
+                  text: "Bomba d'água ",
                   style: TextStyle(fontSize: 30, color: textColor),
                   children: [
                     TextSpan(
@@ -274,7 +311,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
+
             SizedBox(height: 30),
+
           ],
         ),
       ),
