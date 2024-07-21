@@ -267,7 +267,7 @@ String formatTime(String dateStr) {
                 ),
                 primaryYAxis: NumericAxis(minimum: 0, maximum: 100),
                 title: ChartTitle(text: 'Dados de Umidade ao Longo do Dia'),
-                legend: Legend(isVisible: true),
+                legend: Legend(isVisible: false),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <ChartSeries>[
                   LineSeries<Map<String, dynamic>, String>(
