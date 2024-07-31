@@ -1,7 +1,7 @@
-# Regador
+# Regador App
 
 
-Descrição do WateringCan:
+## Descrição do WateringCan:
 
 - WateringCan é um avançado sistema de irrigação automática.
 
@@ -14,6 +14,12 @@ Descrição do WateringCan:
 - Envia atualizações em tempo real para o dispositivo móvel do usuário.
 
 - Permite acompanhamento do status da umidade do solo remotamente.
+
+
+## Site do projeto: https://bit.ly/Automação_WateringCan
+
+## Back end código: https://github.com/Leooliprado/regador_wifi
+## regador código: https://github.com/Leooliprado/regador_wifi_esp32
 
 
 
