@@ -1,5 +1,23 @@
 # regador
 
+
+Descrição do WateringCan:
+
+- WateringCan é um avançado sistema de irrigação automática.
+
+- Mantém plantas bem hidratadas de forma autônoma.
+
+- Ajusta-se às necessidades específicas de irrigação das plantas.
+
+- Monitora continuamente os níveis de umidade do solo.
+
+- Envia atualizações em tempo real para o dispositivo móvel do usuário.
+
+- Permite acompanhamento do status da umidade do solo remotamente.
+
+
+
+
 A new Flutter project.
 
 ## Getting Started
