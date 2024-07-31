@@ -19,7 +19,7 @@
 ## Site do projeto: https://bit.ly/Automação_WateringCan
 
 ## Back end código: https://github.com/Leooliprado/regador_wifi
-## regador código: https://github.com/Leooliprado/regador_wifi_esp32
+## Regador código: https://github.com/Leooliprado/regador_wifi_esp32
 
 
 
