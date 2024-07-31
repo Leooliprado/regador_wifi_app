@@ -1,4 +1,4 @@
-# regador
+# Regador
 
 
 Descrição do WateringCan:
