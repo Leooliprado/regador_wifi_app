@@ -20,6 +20,7 @@
 
 ## Back end código: https://github.com/Leooliprado/regador_wifi
 ## Regador código: https://github.com/Leooliprado/regador_wifi_esp32
+## Banco de dados: https://github.com/Leooliprado/regador_banco
 
 
 
