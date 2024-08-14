@@ -58,9 +58,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final String url = 'http://44.206.253.220:4000/puxar';
   String? umidade;
   String? mediaDiaria;
+  String? vaiChover;
+  String? pop;
   List<dynamic>? mediasDiariasSemana;
   bool? estadoBombaDagua;
-  int? precisa_irrigar;
+  String? precisa_irrigar;
   bool isLoading = false;
   String error = '';
   Timer? _timer;
@@ -110,7 +112,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         estadoBombaDagua = fetchedData['estado_bomba'] as bool?;
         mediasDiariasSemana = fetchedData['medias_diarias_semana'];
         tudoTebalaIrrigar = fetchedData['tudo_tebala_irrigar'];
-        precisa_irrigar = int.tryParse(fetchedData['precisa_irrigar'].toString());
+        precisa_irrigar = fetchedData['precisa_irrigar'].toString();;
+
+        // Extrair informações de prever_chuva
+        if (fetchedData['prever_chuva'] != null) {
+          final preverChuva = fetchedData['prever_chuva'];
+          vaiChover = preverChuva['description'];
+          pop = preverChuva['pop']?.toString() ?? '0.0';
+          double temp = preverChuva['temp']?.toDouble() ?? 0.0;
+          vaiChover = "Previsão do tempo para hoje: ${vaiChover ?? "N/A"} com ${pop}% de chance de chuva, Temperatura: ${temp.toStringAsFixed(1)}°C";
+        }
       });
     } catch (e) {
       setState(() {
@@ -139,16 +150,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return 100 - ((humidityValue / maxSensorValue) * 100);
   }
 
-String formatDate(String dateStr) {
-  final date = DateFormat('EEE, dd MMM yyyy HH:mm:ss \'GMT\'').parse(dateStr);
-  return DateFormat('dd/MM/yyyy').format(date); // Alterado para exibir somente a data
-}
-String formatTime(String dateStr) {
-  final date = DateTime.parse(dateStr);
-  return DateFormat('HH:mm').format(date); // Formata para exibir somente a hora e os minutos
-}
+  String formatDate(String dateStr) {
+    final date = DateFormat('EEE, dd MMM yyyy HH:mm:ss \'GMT\'').parse(dateStr);
+    return DateFormat('dd/MM/yyyy').format(date); // Alterado para exibir somente a data
+  }
 
-
+  String formatTime(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    return DateFormat('HH:mm').format(date); // Formata para exibir somente a hora e os minutos
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,8 +175,18 @@ String formatTime(String dateStr) {
               umidade != null ? '$umidade umidade!' : 'Carregando...',
               style: TextStyle(fontSize: 30),
             ),
-            if (error.isNotEmpty) Text('Erro: $error',
-            style: TextStyle(fontSize: 30),),
+            if (error.isNotEmpty)
+              Text(
+                'Erro: $error',
+                style: TextStyle(fontSize: 30),
+              ),
+
+            if (pop != null && double.parse(pop!) >= 70)
+              Text(
+                "Hoje a previsão é de chuva com $pop% de chance. Por isso, a irrigação será suspensa!",
+                style: TextStyle(fontSize: 20, color: Colors.blue),
+                textAlign: TextAlign.center, // Centraliza o texto
+              ),
 
             if (umidade != null)
               SfRadialGauge(
@@ -313,6 +333,14 @@ String formatTime(String dateStr) {
               ),
 
             SizedBox(height: 30),
+            if (vaiChover != null)
+              Text(
+                vaiChover!,
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center, // Centraliza o texto
+              ),
+
+            SizedBox(height: 40),
 
           ],
         ),
