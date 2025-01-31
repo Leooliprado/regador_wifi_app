@@ -40,5 +40,5 @@ O **WateringCan** é um sistema de irrigação automática inteligente e avança
 Para clonar o repositório principal do projeto, use o seguinte comando:
 
 ```bash
-git clone https://github.com/Leooliprado/regador_wifi_esp32.git
+git clone https://github.com/Leooliprado/regador_wifi_app_WateringCan-V1.git
 ```
